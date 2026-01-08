@@ -20,7 +20,7 @@ export default class PERSPEQTIVETypeToolbarAction extends TypeToolbarAction {
         if (sortBy !== undefined && typeof sortBy !== 'string') {
             throw new Error('The "sort_by" option must be a string if given!');
         }
-        debugger;
+
         const isDisabled = disabledCondition ? jexl.evalSync(disabledCondition, this.conditionData) : false;
         const currentType = this.resourceFormStore.type;
 
