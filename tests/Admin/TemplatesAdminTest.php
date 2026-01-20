@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PERSPEQTIVE\SuluPermissionAwareTemplatesBundle\Tests\Admin;
 
 use PERSPEQTIVE\SuluPermissionAwareTemplatesBundle\Admin\TemplatesAdmin;
+use PERSPEQTIVE\SuluPermissionAwareTemplatesBundle\Tests\Mocks\MockToolbarActionUpdater;
 use PERSPEQTIVE\SuluPermissionAwareTemplatesBundle\Tests\Mocks\Sulu\MockFormMetadataLoader;
 use PERSPEQTIVE\SuluPermissionAwareTemplatesBundle\Tests\Mocks\Sulu\MockSecurityChecker;
 use PHPUnit\Framework\TestCase;
@@ -18,26 +19,29 @@ use Sulu\Bundle\PageBundle\Document\BasePageDocument;
 
 class TemplatesAdminTest extends TestCase
 {
-    private FormMetadataLoaderInterface $metadataLoader;
+    private MockFormMetadataLoader $metadataLoader;
     private MockSecurityChecker $securityChecker;
     private TemplatesAdmin $admin;
+    private MockToolbarActionUpdater $toolbarActionUpdater;
 
     protected function setUp(): void
     {
         $this->metadataLoader = $this->setupMetadataLoader();
         $this->securityChecker = new MockSecurityChecker();
+        $this->toolbarActionUpdater = new MockToolbarActionUpdater();
         $this->admin = new TemplatesAdmin(
             $this->metadataLoader,
             $this->securityChecker,
+            $this->toolbarActionUpdater
         );
     }
 
     public function testGetContexts(): void
     {
         $expected = ['Sulu' => ['Templates' => [
-            'templates.template1' => ['edit'],
-            'templates.template2' => ['edit'],
-            'templates.template3' => ['edit'],
+            'templates.template1' => ['add', 'edit', 'delete'],
+            'templates.template2' => ['add', 'edit', 'delete'],
+            'templates.template3' => ['add', 'edit', 'delete'],
         ]]];
 
         $result = $this->admin->getSecurityContexts();
@@ -47,7 +51,9 @@ class TemplatesAdminTest extends TestCase
 
     public function testConfigureViews(): void
     {
+        $this->securityChecker->result['templates.template1']['add'] = true;
         $this->securityChecker->result['templates.template1']['edit'] = true;
+        $this->securityChecker->result['templates.template3']['add'] = true;
         $this->securityChecker->result['templates.template3']['edit'] = true;
 
         $formToolbarActionsWithType = [
@@ -66,8 +72,6 @@ class TemplatesAdminTest extends TestCase
             (new FormViewBuilder('sulu_page.page_add_form.details', '/details'))
                 ->setResourceKey(BasePageDocument::RESOURCE_KEY)
                 ->setFormKey('page')
-                ->setResourceKey(BasePageDocument::RESOURCE_KEY)
-                ->setTabTitle('sulu_admin.details')
                 ->addToolbarActions($formToolbarActionsWithType),
         );
         $viewCollection->add(
@@ -79,19 +83,81 @@ class TemplatesAdminTest extends TestCase
         );
 
         $this->admin->configureViews($viewCollection);
-        /** @var ToolbarAction $modifiedToolbarAction */
-        $modifiedToolbarAction = $viewCollection->get('sulu_page.page_edit_form.details')->getView()->getOption('toolbarActions')[1];
-        self::assertSame('perspeqtive.sulu_admin.type', $modifiedToolbarAction->getType());
-        self::assertSame('((_permissions && !_permissions.edit) || (( template != "template3" ) && ( template != "template1" )))', $modifiedToolbarAction->getOptions()['disabled_condition']);
-        self::assertSame(['template3', 'template1'], $modifiedToolbarAction->getOptions()['accessible_templates']);
 
-        $modifiedToolbarAction = $viewCollection->get('sulu_page.page_add_form.details')->getView()->getOption('toolbarActions')[1];
-        self::assertSame('perspeqtive.sulu_admin.type', $modifiedToolbarAction->getType());
-        self::assertSame('((_permissions && !_permissions.edit) || (( template != "template3" ) && ( template != "template1" )))', $modifiedToolbarAction->getOptions()['disabled_condition']);
-        self::assertSame(['template3', 'template1'], $modifiedToolbarAction->getOptions()['accessible_templates']);
+        self::assertCount(2, $this->toolbarActionUpdater->calledWith);
+
+        $firstCall = $this->toolbarActionUpdater->calledWith[0];
+        self::assertSame(['template3', 'template1'], $firstCall['accessibleTemplates']);
+        self::assertSame(' || (( template != "template3" ) && ( template != "template1" ))', $firstCall['disabledAddCondition']);
+        self::assertSame(' || (( template != "template3" ) && ( template != "template1" ))', $firstCall['disabledEditCondition']);
+        self::assertSame('', $firstCall['disabledDeleteCondition']);
+
+        $secondCall = $this->toolbarActionUpdater->calledWith[1];
+        self::assertSame(['template3', 'template1'], $secondCall['accessibleTemplates']);
+        self::assertSame(' || (( template != "template3" ) && ( template != "template1" ))', $secondCall['disabledAddCondition']);
+        self::assertSame(' || (( template != "template3" ) && ( template != "template1" ))', $secondCall['disabledEditCondition']);
+        self::assertSame('', $secondCall['disabledDeleteCondition']);
     }
 
-    protected function setupMetadataLoader(): FormMetadataLoaderInterface
+    public function testFormMetaDataNotFound(): void
+    {
+        $this->metadataLoader->metadata = null;
+
+        $this->securityChecker->result['templates.template1']['add'] = true;
+        $this->securityChecker->result['templates.template1']['edit'] = true;
+        $this->securityChecker->result['templates.template3']['add'] = true;
+        $this->securityChecker->result['templates.template3']['edit'] = true;
+
+        $formToolbarActionsWithType = [
+            new ToolbarAction('sulu_admin.save'),
+            new ToolbarAction(
+                'sulu_admin.type',
+                [
+                    'sort_by' => 'title',
+                    'disabled_condition' => '(_permissions && !_permissions.edit)',
+                ],
+            ),
+        ];
+
+        $viewCollection = new ViewCollection();
+        $viewCollection->add(
+            (new FormViewBuilder('sulu_page.page_edit_form.details', '/details'))
+                ->setResourceKey(BasePageDocument::RESOURCE_KEY)
+                ->setFormKey('page')
+                ->addToolbarActions($formToolbarActionsWithType),
+        );
+
+        $this->admin->configureViews($viewCollection);
+
+        self::assertCount(1, $this->toolbarActionUpdater->calledWith);
+
+        $firstCall = $this->toolbarActionUpdater->calledWith[0];
+        self::assertSame([], $firstCall['accessibleTemplates']);
+        self::assertSame('', $firstCall['disabledAddCondition']);
+        self::assertSame('', $firstCall['disabledEditCondition']);
+        self::assertSame('', $firstCall['disabledDeleteCondition']);
+    }
+
+    public function testConfigureViewsWithoutRelevantViews(): void
+    {
+        $viewCollection = new ViewCollection();
+        $viewCollection->add(
+            (new FormViewBuilder('other_view', '/other'))
+                ->setResourceKey('other')
+                ->setFormKey('other')
+        );
+
+        $this->admin->configureViews($viewCollection);
+
+        self::assertCount(0, $this->toolbarActionUpdater->calledWith);
+    }
+
+    public function testGetPriority(): void
+    {
+        self::assertSame(-10, TemplatesAdmin::getPriority());
+    }
+
+    protected function setupMetadataLoader(): MockFormMetadataLoader
     {
         $typedFormMetaData = new TypedFormMetadata();
         foreach (['template3', 'template1', 'template2'] as $module) {
@@ -102,4 +168,6 @@ class TemplatesAdminTest extends TestCase
 
         return new MockFormMetadataLoader($typedFormMetaData);
     }
+
+
 }

@@ -13,16 +13,19 @@ use Sulu\Bundle\AdminBundle\Metadata\MetadataInterface;
 use Sulu\Bundle\PageBundle\Admin\PageAdmin;
 use Sulu\Component\Security\Authorization\PermissionTypes;
 use Sulu\Component\Security\Authorization\SecurityCheckerInterface;
-
 use function implode;
 use function ksort;
 
 class TemplatesAdmin extends Admin
 {
+
+    private ?array $templates = null;
     public function __construct(
-        private FormMetadataLoaderInterface $formMetadataLoader,
-        private SecurityCheckerInterface $securityChecker,
-    ) {
+        private readonly FormMetadataLoaderInterface   $formMetadataLoader,
+        private readonly SecurityCheckerInterface      $securityChecker,
+        private readonly ToolbarActionUpdaterInterface $toolbarActionUpdater
+    )
+    {
     }
 
     public function configureViews(ViewCollection $viewCollection): void
@@ -33,28 +36,49 @@ class TemplatesAdmin extends Admin
 
         /** @var ToolbarAction[] $toolbarActions */
         $accessibleTemplates = $this->getAccessibleTemplates();
-        $disabledCondition = $this->buildDisabledCondition($accessibleTemplates);
+        $editDisabledCondition = $this->buildEditDisabledCondition();
+        $addtDisabledCondition = $this->buildAddDisabledCondition();
+        $deleteDisabledCondition = $this->buildDeleteDisabledCondition();
 
-        $this->handleView($viewCollection, 'sulu_page.page_add_form.details', $disabledCondition, $accessibleTemplates);
-        $this->handleView($viewCollection, 'sulu_page.page_edit_form.details', $disabledCondition, $accessibleTemplates);
+        $this->handleView($viewCollection, 'sulu_page.page_add_form.details', $accessibleTemplates, $addtDisabledCondition, $editDisabledCondition, $deleteDisabledCondition);
+        $this->handleView($viewCollection, 'sulu_page.page_edit_form.details', $accessibleTemplates, $addtDisabledCondition, $editDisabledCondition, $deleteDisabledCondition);
     }
 
-    private function buildDisabledCondition(array $accessibleTemplates): string
-    {
-        $disabledCondition = '';
-        if ($accessibleTemplates !== []) {
-            $disabled = [];
-            foreach ($accessibleTemplates as $template) {
-                $disabled[] = '( template != "' . $template . '" )';
-            }
 
-            $disabledCondition = ' || (' . implode(' && ', $disabled) . ')';
+    private function buildAddDisabledCondition(): string
+    {
+        return $this->buildDisabledConditionForPermission(PermissionTypes::ADD);
+    }
+
+    private function buildEditDisabledCondition(): string
+    {
+        return $this->buildDisabledConditionForPermission(PermissionTypes::EDIT);
+    }
+
+    private function buildDeleteDisabledCondition(): string
+    {
+        return $this->buildDisabledConditionForPermission(PermissionTypes::DELETE);
+    }
+
+    private function buildDisabledConditionForPermission(string $permissionType): string
+    {
+        $templates = $this->loadTemplateNames();
+        $disabled = [];
+        foreach ($templates as $template) {
+            if ($this->securityChecker->hasPermission('templates.' . $template, $permissionType) === false) {
+                continue;
+            }
+            $disabled[] = '( template != "' . $template . '" )';
         }
 
-        return $disabledCondition;
+        if($disabled === []) {
+            return '';
+        }
+
+        return ' || (' . implode(' && ', $disabled) . ')';
     }
 
-    private function handleView(ViewCollection $viewCollection, string $viewName, string $disabledCondition, array $accessibleTemplates): void
+    private function handleView(ViewCollection $viewCollection, string $viewName, array $accessibleTemplates, string $disabledAddCondition, string $disabledEditCondition, string $disabledDeleteCondition): void
     {
         if ($viewCollection->has($viewName) === false) {
             return;
@@ -63,23 +87,14 @@ class TemplatesAdmin extends Admin
         $viewBuilder = $viewCollection->get($viewName);
         $toolbarActions = $viewBuilder->getView()->getOption('toolbarActions');
 
-        foreach ($toolbarActions as $index => $toolbarAction) {
-            if ($toolbarAction->getType() !== 'sulu_admin.type') {
-                continue;
-            }
-            $options = $toolbarAction->getOptions();
-            $options['accessible_templates'] = $accessibleTemplates;
-            $options['disabled_condition'] = '(' . $options['disabled_condition'] . $disabledCondition . ')';
-            $toolbarActions[$index] = new ToolbarAction('perspeqtive.sulu_admin.type', $options);
-            break;
-        }
+        $newToolbarActions = $this->toolbarActionUpdater->updateToolbarAction($toolbarActions, $accessibleTemplates, $disabledAddCondition, $disabledEditCondition, $disabledDeleteCondition);
 
-        $viewBuilder->setOption('toolbarActions', $toolbarActions);
+        $viewBuilder->setOption('toolbarActions', $newToolbarActions);
     }
 
     public function getSecurityContexts(): array
     {
-        $templates = $this->loadTemplates();
+        $templates = $this->loadTemplateNames();
 
         $contexts = [
             'Sulu' => [
@@ -87,9 +102,11 @@ class TemplatesAdmin extends Admin
                 ],
             ],
         ];
-        foreach ($templates as $form) {
-            $contexts['Sulu']['Templates']['templates.' . $form->getName()] = [
+        foreach ($templates as $template) {
+            $contexts['Sulu']['Templates']['templates.' . $template] = [
+                PermissionTypes::ADD,
                 PermissionTypes::EDIT,
+                PermissionTypes::DELETE,
             ];
         }
         ksort($contexts['Sulu']['Templates']);
@@ -102,27 +119,36 @@ class TemplatesAdmin extends Admin
      */
     private function getAccessibleTemplates(): array
     {
-        $templates = $this->loadTemplates();
+        $templates = $this->loadTemplateNames();
         $accessibleTemplates = [];
         foreach ($templates as $template) {
-            if ($this->securityChecker->hasPermission('templates.' . $template->getName(), PermissionTypes::EDIT) === false) {
+            if ($this->securityChecker->hasPermission('templates.' . $template, PermissionTypes::ADD) === false) {
                 continue;
             }
-            $accessibleTemplates[] = $template->getName();
+            $accessibleTemplates[] = $template;
         }
 
         return $accessibleTemplates;
     }
 
-    private function loadTemplates(): array
+    private function loadTemplateNames(): array
     {
+        if($this->templates !== null) {
+            return $this->templates;
+        }
         /** @var MetadataInterface $metaData */
         $metaData = $this->formMetadataLoader->getMetadata('page', 'de', []);
         if (empty($metaData)) {
             return [];
         }
 
-        return $metaData->getForms();
+        $templateNames = [];
+        foreach ($metaData->getForms() as $form) {
+            $templateNames[] = $form->getName();
+        }
+
+        $this->templates = $templateNames;
+        return $templateNames;
     }
 
     public static function getPriority(): int
