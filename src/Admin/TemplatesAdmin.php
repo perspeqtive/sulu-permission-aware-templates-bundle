@@ -13,19 +13,19 @@ use Sulu\Bundle\AdminBundle\Metadata\MetadataInterface;
 use Sulu\Bundle\PageBundle\Admin\PageAdmin;
 use Sulu\Component\Security\Authorization\PermissionTypes;
 use Sulu\Component\Security\Authorization\SecurityCheckerInterface;
+
 use function implode;
 use function ksort;
 
 class TemplatesAdmin extends Admin
 {
-
     private ?array $templates = null;
+
     public function __construct(
-        private readonly FormMetadataLoaderInterface   $formMetadataLoader,
-        private readonly SecurityCheckerInterface      $securityChecker,
-        private readonly ToolbarActionUpdaterInterface $toolbarActionUpdater
-    )
-    {
+        private readonly FormMetadataLoaderInterface $formMetadataLoader,
+        private readonly SecurityCheckerInterface $securityChecker,
+        private readonly ToolbarActionUpdaterInterface $toolbarActionUpdater,
+    ) {
     }
 
     public function configureViews(ViewCollection $viewCollection): void
@@ -43,7 +43,6 @@ class TemplatesAdmin extends Admin
         $this->handleView($viewCollection, 'sulu_page.page_add_form.details', $accessibleTemplates, $addtDisabledCondition, $editDisabledCondition, $deleteDisabledCondition);
         $this->handleView($viewCollection, 'sulu_page.page_edit_form.details', $accessibleTemplates, $addtDisabledCondition, $editDisabledCondition, $deleteDisabledCondition);
     }
-
 
     private function buildAddDisabledCondition(): string
     {
@@ -71,7 +70,7 @@ class TemplatesAdmin extends Admin
             $disabled[] = '( template != "' . $template . '" )';
         }
 
-        if($disabled === []) {
+        if ($disabled === []) {
             return '';
         }
 
@@ -133,7 +132,7 @@ class TemplatesAdmin extends Admin
 
     private function loadTemplateNames(): array
     {
-        if($this->templates !== null) {
+        if ($this->templates !== null) {
             return $this->templates;
         }
         /** @var MetadataInterface $metaData */
@@ -148,6 +147,7 @@ class TemplatesAdmin extends Admin
         }
 
         $this->templates = $templateNames;
+
         return $templateNames;
     }
 

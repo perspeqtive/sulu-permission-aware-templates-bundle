@@ -34,7 +34,7 @@ class ToolbarActionUpdaterTest extends TestCase
             ['template1', 'template2'],
             ' && add_disabled',
             ' && edit_disabled',
-            ' && delete_disabled'
+            ' && delete_disabled',
         );
 
         $this->assertCount(1, $result);
@@ -58,7 +58,7 @@ class ToolbarActionUpdaterTest extends TestCase
             [],
             ' && add',
             ' && edit',
-            ' && delete'
+            ' && delete',
         );
 
         $this->assertSame('perspeqtive.sulu_admin.save', $result[0]->getType());
@@ -89,7 +89,7 @@ class ToolbarActionUpdaterTest extends TestCase
             [],
             ' && add',
             ' && edit',
-            ' && delete'
+            ' && delete',
         );
 
         $this->assertCount(1, $result);
@@ -97,7 +97,7 @@ class ToolbarActionUpdaterTest extends TestCase
         $dropdown = $result[0];
         $this->assertInstanceOf(DropdownToolbarAction::class, $dropdown);
         $this->assertSame('Options', $dropdown->getOptions()['label']);
-        
+
         $updatedInnerActions = $dropdown->getOptions()['toolbarActions'];
         $this->assertCount(1, $updatedInnerActions);
         $this->assertSame('perspeqtive.sulu_admin.save', $updatedInnerActions[0]->getType());
@@ -114,7 +114,7 @@ class ToolbarActionUpdaterTest extends TestCase
             [],
             '',
             '',
-            ''
+            '',
         );
 
         $this->assertSame($otherAction, $result[0]);

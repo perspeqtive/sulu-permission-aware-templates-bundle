@@ -13,7 +13,6 @@ use Sulu\Bundle\AdminBundle\Admin\View\FormViewBuilder;
 use Sulu\Bundle\AdminBundle\Admin\View\ToolbarAction;
 use Sulu\Bundle\AdminBundle\Admin\View\ViewCollection;
 use Sulu\Bundle\AdminBundle\Metadata\FormMetadata\FormMetadata;
-use Sulu\Bundle\AdminBundle\Metadata\FormMetadata\FormMetadataLoaderInterface;
 use Sulu\Bundle\AdminBundle\Metadata\FormMetadata\TypedFormMetadata;
 use Sulu\Bundle\PageBundle\Document\BasePageDocument;
 
@@ -32,7 +31,7 @@ class TemplatesAdminTest extends TestCase
         $this->admin = new TemplatesAdmin(
             $this->metadataLoader,
             $this->securityChecker,
-            $this->toolbarActionUpdater
+            $this->toolbarActionUpdater,
         );
     }
 
@@ -144,7 +143,7 @@ class TemplatesAdminTest extends TestCase
         $viewCollection->add(
             (new FormViewBuilder('other_view', '/other'))
                 ->setResourceKey('other')
-                ->setFormKey('other')
+                ->setFormKey('other'),
         );
 
         $this->admin->configureViews($viewCollection);
@@ -168,6 +167,4 @@ class TemplatesAdminTest extends TestCase
 
         return new MockFormMetadataLoader($typedFormMetaData);
     }
-
-
 }

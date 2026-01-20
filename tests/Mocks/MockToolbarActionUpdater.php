@@ -11,7 +11,6 @@ class MockToolbarActionUpdater implements ToolbarActionUpdaterInterface
     /** @var array<string, mixed> */
     public array $calledWith = [];
 
-    /** @var array|null */
     public ?array $returnValue = null;
 
     public function updateToolbarAction(
@@ -19,7 +18,7 @@ class MockToolbarActionUpdater implements ToolbarActionUpdaterInterface
         array $accessibleTemplates,
         string $disabledAddCondition,
         string $disabledEditCondition,
-        string $disabledDeleteCondition
+        string $disabledDeleteCondition,
     ): ?array {
         $this->calledWith[] = [
             'toolbarActions' => $toolbarActions,

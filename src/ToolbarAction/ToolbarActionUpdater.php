@@ -12,12 +12,11 @@ class ToolbarActionUpdater implements ToolbarActionUpdaterInterface
 {
     public function updateToolbarAction(
         ?array $toolbarActions,
-        array  $accessibleTemplates,
+        array $accessibleTemplates,
         string $disabledAddCondition,
         string $disabledEditCondition,
-        string $disabledDeleteCondition
-    ): ?array
-    {
+        string $disabledDeleteCondition,
+    ): ?array {
         if (null === $toolbarActions) {
             return null;
         }
@@ -39,12 +38,11 @@ class ToolbarActionUpdater implements ToolbarActionUpdaterInterface
 
     private function updateDropdownToolbarAction(
         DropdownToolbarAction $toolbarAction,
-        array                 $accessibleTemplates,
-        string                $disabledAddCondition,
-        string                $disabledEditCondition,
-        string                $disabledDeleteCondition
-    ): DropdownToolbarAction
-    {
+        array $accessibleTemplates,
+        string $disabledAddCondition,
+        string $disabledEditCondition,
+        string $disabledDeleteCondition,
+    ): DropdownToolbarAction {
         $options = $toolbarAction->getOptions();
 
         return new DropdownToolbarAction(
@@ -55,8 +53,8 @@ class ToolbarActionUpdater implements ToolbarActionUpdaterInterface
                 $accessibleTemplates,
                 $disabledAddCondition,
                 $disabledEditCondition,
-                $disabledDeleteCondition
-            )
+                $disabledDeleteCondition,
+            ),
         );
     }
 
@@ -76,5 +74,4 @@ class ToolbarActionUpdater implements ToolbarActionUpdaterInterface
 
         return new ToolbarAction('perspeqtive.' . $toolbarAction->getType(), $options);
     }
-
 }
