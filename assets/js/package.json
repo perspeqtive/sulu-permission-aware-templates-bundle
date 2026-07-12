@@ -1,0 +1,11 @@
+{
+    "name": "sulu-permission-aware-templates-bundle",
+    "description": "Adds support for permission aware templates",
+    "license": "MIT",
+    "devDependencies": {
+        "sulu-admin-bundle": "file:../../../AdminBundle/Resources/js"
+    },
+    "peerDependencies": {
+        "sulu-admin-bundle": "*",
+    }
+}

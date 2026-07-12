@@ -42,6 +42,37 @@ return [
 ];
 ```
 
+### Add the bundle to package.json
+
+In order to enable visibility- and disabled-checks you need to register the bundle in your package.json:
+
+```js
+// assets/admin/package.json
+{
+    // ...
+    "dependencies":
+    {
+        // ...
+        "sulu-permission-aware-templates-bundle": "file:../../vendor/perspeqtive/sulu-permission-aware-templates-bundle/assets/js"
+    }
+},
+```
+
+### Import the bundle
+
+```js
+// ...
+import 'sulu-permission-aware-templates-bundle';
+```
+
+### Rebuild the admin JS
+
+```bash
+cd assets/admin
+npm install
+npm run build
+```
+
 ### Clear the cache
 
 Clear the cache after installing the bundle:
