@@ -99,24 +99,7 @@ The page editor then applies the permissions automatically:
 - Users without `write` permission for the current template cannot save, publish or unpublish that page.
 - Users without `delete` permission for the current template cannot delete that page.
 
-## 🛠️ Development
-
-Install the dependencies:
-
-```bash
-composer install
-```
-
-Run the tests:
-
-```bash
-vendor/bin/phpunit
-```
 
 ## 🤝 Contribution
 
 Please feel free to fork and extend existing or add new features and send a pull request with your changes. To establish a consistent code quality, please provide unit tests for all your changes and adapt the documentation.
-
-## 📄 License
-
-This bundle is proprietary software by PERSPEQTIVE GmbH.
