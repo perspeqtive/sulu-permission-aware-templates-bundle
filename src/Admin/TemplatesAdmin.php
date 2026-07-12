@@ -8,11 +8,11 @@ use Sulu\Bundle\AdminBundle\Admin\Admin;
 use Sulu\Bundle\AdminBundle\Admin\View\ToolbarAction;
 use Sulu\Bundle\AdminBundle\Admin\View\ViewCollection;
 use Sulu\Bundle\AdminBundle\Metadata\FormMetadata\FormMetadata;
-use Sulu\Bundle\AdminBundle\Metadata\FormMetadata\FormMetadataLoaderInterface;
 use Sulu\Bundle\AdminBundle\Metadata\MetadataInterface;
-use Sulu\Bundle\PageBundle\Admin\PageAdmin;
+use Sulu\Bundle\AdminBundle\Metadata\MetadataProviderInterface;
 use Sulu\Component\Security\Authorization\PermissionTypes;
 use Sulu\Component\Security\Authorization\SecurityCheckerInterface;
+use Sulu\Page\Infrastructure\Sulu\Admin\PageAdmin;
 
 use function implode;
 use function ksort;
@@ -22,7 +22,7 @@ class TemplatesAdmin extends Admin
     private ?array $templates = null;
 
     public function __construct(
-        private readonly FormMetadataLoaderInterface $formMetadataLoader,
+        private readonly MetadataProviderInterface $formMetadataLoader,
         private readonly SecurityCheckerInterface $securityChecker,
         private readonly ToolbarActionUpdaterInterface $toolbarActionUpdater,
     ) {
@@ -30,7 +30,7 @@ class TemplatesAdmin extends Admin
 
     public function configureViews(ViewCollection $viewCollection): void
     {
-        if ($viewCollection->has('sulu_page.page_edit_form.details') === false) {
+        if ($viewCollection->has('sulu_page.page_edit_form') === false) {
             return;
         }
 
@@ -40,8 +40,8 @@ class TemplatesAdmin extends Admin
         $addtDisabledCondition = $this->buildAddDisabledCondition();
         $deleteDisabledCondition = $this->buildDeleteDisabledCondition();
 
-        $this->handleView($viewCollection, 'sulu_page.page_add_form.details', $accessibleTemplates, $addtDisabledCondition, $editDisabledCondition, $deleteDisabledCondition);
-        $this->handleView($viewCollection, 'sulu_page.page_edit_form.details', $accessibleTemplates, $addtDisabledCondition, $editDisabledCondition, $deleteDisabledCondition);
+        $this->handleView($viewCollection, 'sulu_page.page_add_form.content', $accessibleTemplates, $addtDisabledCondition, $editDisabledCondition, $deleteDisabledCondition);
+        $this->handleView($viewCollection, 'sulu_page.page_edit_form.content', $accessibleTemplates, $addtDisabledCondition, $editDisabledCondition, $deleteDisabledCondition);
     }
 
     private function buildAddDisabledCondition(): string
@@ -71,7 +71,7 @@ class TemplatesAdmin extends Admin
         }
 
         if ($disabled === []) {
-            return '';
+            return '1 != 0';
         }
 
         return ' || (' . implode(' && ', $disabled) . ')';
