@@ -6,6 +6,6 @@
         "sulu-admin-bundle": "file:../../../AdminBundle/Resources/js"
     },
     "peerDependencies": {
-        "sulu-admin-bundle": "*",
+        "sulu-admin-bundle": "*"
     }
 }
