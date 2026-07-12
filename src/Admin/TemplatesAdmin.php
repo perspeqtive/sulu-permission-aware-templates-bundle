@@ -7,8 +7,9 @@ namespace PERSPEQTIVE\SuluPermissionAwareTemplatesBundle\Admin;
 use Sulu\Bundle\AdminBundle\Admin\Admin;
 use Sulu\Bundle\AdminBundle\Admin\View\ToolbarAction;
 use Sulu\Bundle\AdminBundle\Admin\View\ViewCollection;
+use Sulu\Bundle\AdminBundle\Exception\MetadataNotFoundException;
 use Sulu\Bundle\AdminBundle\Metadata\FormMetadata\FormMetadata;
-use Sulu\Bundle\AdminBundle\Metadata\MetadataInterface;
+use Sulu\Bundle\AdminBundle\Metadata\FormMetadata\TypedFormMetadata;
 use Sulu\Bundle\AdminBundle\Metadata\MetadataProviderInterface;
 use Sulu\Component\Security\Authorization\PermissionTypes;
 use Sulu\Component\Security\Authorization\SecurityCheckerInterface;
@@ -22,7 +23,7 @@ class TemplatesAdmin extends Admin
     private ?array $templates = null;
 
     public function __construct(
-        private readonly MetadataProviderInterface $formMetadataLoader,
+        private readonly MetadataProviderInterface $metadataProvider,
         private readonly SecurityCheckerInterface $securityChecker,
         private readonly ToolbarActionUpdaterInterface $toolbarActionUpdater,
     ) {
@@ -30,7 +31,7 @@ class TemplatesAdmin extends Admin
 
     public function configureViews(ViewCollection $viewCollection): void
     {
-        if ($viewCollection->has('sulu_page.page_edit_form') === false) {
+        if ($viewCollection->has('sulu_page.page_edit_form.content') === false) {
             return;
         }
 
@@ -135,15 +136,19 @@ class TemplatesAdmin extends Admin
         if ($this->templates !== null) {
             return $this->templates;
         }
-        /** @var MetadataInterface $metaData */
-        $metaData = $this->formMetadataLoader->getMetadata('page', 'de', []);
-        if (empty($metaData)) {
+        try {
+            /** @var TypedFormMetadata $metaData */
+            $metaData = $this->metadataProvider->getMetadata('page', 'de', []);
+            if ($metaData->getForms() === []) {
+                return [];
+            }
+        } catch (MetadataNotFoundException) {
             return [];
         }
 
         $templateNames = [];
         foreach ($metaData->getForms() as $form) {
-            $templateNames[] = $form->getName();
+            $templateNames[] = $form->getKey();
         }
 
         $this->templates = $templateNames;
