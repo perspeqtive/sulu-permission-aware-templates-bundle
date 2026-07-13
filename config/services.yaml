@@ -1,8 +1,9 @@
+# yaml-language-server: $schema=../vendor/symfony/dependency-injection/Loader/schema/services.schema.json
 services:
   perspeqtive_sulu_permission_aware_templates.admin.templates_admin:
     class: PERSPEQTIVE\SuluPermissionAwareTemplatesBundle\Admin\TemplatesAdmin
     arguments:
-      $formMetadataLoader: '@sulu_admin.structure_form_metadata_loader'
+      $formMetadataLoader: '@sulu_admin.form_metadata_provider'
       $securityChecker: '@sulu_security.security_checker'
       $toolbarActionUpdater: '@perspeqtive_sulu_permission_aware_templates.toolbar_action.toolbar_action_updater'
     tags:

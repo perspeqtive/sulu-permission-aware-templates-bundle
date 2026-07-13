@@ -9,6 +9,7 @@ export default class PERSPEQTIVESaveToolbarAction extends SaveToolbarAction {
         if (toolbarItemConfig === undefined) {
             return;
         }
+
         toolbarItemConfig.disabled = toolbarItemConfig.disabled || this.getDisabledCondition();
 
         return toolbarItemConfig;

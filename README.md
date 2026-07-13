@@ -75,7 +75,6 @@ npm install
 npm run build
 ```
 
-
 ### Clear the cache
 
 Clear the cache after installing the bundle:
@@ -113,6 +112,8 @@ Internally the bundle maps these checks to Sulu's template security permissions:
 | `add` | Template dropdown availability |
 | `edit` | Save, publish and unpublish toolbar actions |
 | `delete` | Delete toolbar action |
+
+⚠️ **Important**: After changing the permissions, you need to clear the browser cache (F5) for the changes to take effect.
 
 ## 🧩 Usage
 

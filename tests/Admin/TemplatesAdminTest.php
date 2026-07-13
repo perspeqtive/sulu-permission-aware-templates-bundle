@@ -6,7 +6,7 @@ namespace PERSPEQTIVE\SuluPermissionAwareTemplatesBundle\Tests\Admin;
 
 use PERSPEQTIVE\SuluPermissionAwareTemplatesBundle\Admin\TemplatesAdmin;
 use PERSPEQTIVE\SuluPermissionAwareTemplatesBundle\Tests\Mocks\MockToolbarActionUpdater;
-use PERSPEQTIVE\SuluPermissionAwareTemplatesBundle\Tests\Mocks\Sulu\MockFormMetadataLoader;
+use PERSPEQTIVE\SuluPermissionAwareTemplatesBundle\Tests\Mocks\Sulu\MockFormMetadataProvider;
 use PERSPEQTIVE\SuluPermissionAwareTemplatesBundle\Tests\Mocks\Sulu\MockSecurityChecker;
 use PHPUnit\Framework\TestCase;
 use Sulu\Bundle\AdminBundle\Admin\View\FormViewBuilder;
@@ -14,22 +14,22 @@ use Sulu\Bundle\AdminBundle\Admin\View\ToolbarAction;
 use Sulu\Bundle\AdminBundle\Admin\View\ViewCollection;
 use Sulu\Bundle\AdminBundle\Metadata\FormMetadata\FormMetadata;
 use Sulu\Bundle\AdminBundle\Metadata\FormMetadata\TypedFormMetadata;
-use Sulu\Bundle\PageBundle\Document\BasePageDocument;
+use Sulu\Page\Domain\Model\PageInterface;
 
 class TemplatesAdminTest extends TestCase
 {
-    private MockFormMetadataLoader $metadataLoader;
+    private MockFormMetadataProvider $metadataProvider;
     private MockSecurityChecker $securityChecker;
     private TemplatesAdmin $admin;
     private MockToolbarActionUpdater $toolbarActionUpdater;
 
     protected function setUp(): void
     {
-        $this->metadataLoader = $this->setupMetadataLoader();
+        $this->metadataProvider = $this->setupMetadataLoader();
         $this->securityChecker = new MockSecurityChecker();
         $this->toolbarActionUpdater = new MockToolbarActionUpdater();
         $this->admin = new TemplatesAdmin(
-            $this->metadataLoader,
+            $this->metadataProvider,
             $this->securityChecker,
             $this->toolbarActionUpdater,
         );
@@ -68,16 +68,16 @@ class TemplatesAdminTest extends TestCase
 
         $viewCollection = new ViewCollection();
         $viewCollection->add(
-            (new FormViewBuilder('sulu_page.page_add_form.details', '/details'))
-                ->setResourceKey(BasePageDocument::RESOURCE_KEY)
+            (new FormViewBuilder('sulu_page.page_add_form.content', '/content'))
+                ->setResourceKey(PageInterface::RESOURCE_KEY)
                 ->setFormKey('page')
                 ->addToolbarActions($formToolbarActionsWithType),
         );
         $viewCollection->add(
-            (new FormViewBuilder('sulu_page.page_edit_form.details', '/details'))
-                ->setTabTitle('sulu_admin.details')
+            (new FormViewBuilder('sulu_page.page_edit_form.content', '/content'))
+                ->setTabTitle('sulu_admin.content')
                 ->setFormKey('page')
-                ->setResourceKey(BasePageDocument::RESOURCE_KEY)
+                ->setResourceKey(PageInterface::RESOURCE_KEY)
                 ->addToolbarActions($formToolbarActionsWithType),
         );
 
@@ -100,7 +100,7 @@ class TemplatesAdminTest extends TestCase
 
     public function testFormMetaDataNotFound(): void
     {
-        $this->metadataLoader->metadata = null;
+        $this->metadataProvider->metadata = null;
 
         $this->securityChecker->result['templates.template1']['add'] = true;
         $this->securityChecker->result['templates.template1']['edit'] = true;
@@ -120,8 +120,8 @@ class TemplatesAdminTest extends TestCase
 
         $viewCollection = new ViewCollection();
         $viewCollection->add(
-            (new FormViewBuilder('sulu_page.page_edit_form.details', '/details'))
-                ->setResourceKey(BasePageDocument::RESOURCE_KEY)
+            (new FormViewBuilder('sulu_page.page_edit_form.content', '/content'))
+                ->setResourceKey(PageInterface::RESOURCE_KEY)
                 ->setFormKey('page')
                 ->addToolbarActions($formToolbarActionsWithType),
         );
@@ -156,15 +156,15 @@ class TemplatesAdminTest extends TestCase
         self::assertSame(-10, TemplatesAdmin::getPriority());
     }
 
-    protected function setupMetadataLoader(): MockFormMetadataLoader
+    protected function setupMetadataLoader(): MockFormMetadataProvider
     {
-        $typedFormMetaData = new TypedFormMetadata();
+        $typedFormMetadata = new TypedFormMetadata();
         foreach (['template3', 'template1', 'template2'] as $module) {
             $formMetaData = new FormMetadata();
-            $formMetaData->setName($module);
-            $typedFormMetaData->addForm($module, $formMetaData);
+            $formMetaData->setKey($module);
+            $typedFormMetadata->addForm($module, $formMetaData);
         }
 
-        return new MockFormMetadataLoader($typedFormMetaData);
+        return new MockFormMetadataProvider($typedFormMetadata);
     }
 }
