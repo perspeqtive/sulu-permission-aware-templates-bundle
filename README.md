@@ -113,6 +113,8 @@ Internally the bundle maps these checks to Sulu's template security permissions:
 | `edit` | Save, publish and unpublish toolbar actions |
 | `delete` | Delete toolbar action |
 
+⚠️ **Important**: After changing the permissions, you need to clear the browser cache (F5) for the changes to take effect.
+
 ## 🧩 Usage
 
 No additional configuration is required. The bundle reads the available page templates from Sulu's `page` form metadata and registers matching security contexts automatically.
