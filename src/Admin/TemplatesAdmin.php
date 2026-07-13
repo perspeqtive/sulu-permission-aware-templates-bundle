@@ -71,7 +71,7 @@ class TemplatesAdmin extends Admin
         }
 
         if ($disabled === []) {
-            return '1 != 0';
+            return ' || 1 != 0';
         }
 
         return ' || (' . implode(' && ', $disabled) . ')';
