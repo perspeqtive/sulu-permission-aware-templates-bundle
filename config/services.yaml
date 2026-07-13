@@ -3,7 +3,7 @@ services:
   perspeqtive_sulu_permission_aware_templates.admin.templates_admin:
     class: PERSPEQTIVE\SuluPermissionAwareTemplatesBundle\Admin\TemplatesAdmin
     arguments:
-      $formMetadataLoader: '@sulu_admin.form_metadata_provider'
+      $metadataProvider: '@sulu_admin.form_metadata_provider'
       $securityChecker: '@sulu_security.security_checker'
       $toolbarActionUpdater: '@perspeqtive_sulu_permission_aware_templates.toolbar_action.toolbar_action_updater'
     tags:
