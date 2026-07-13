@@ -89,13 +89,13 @@ class TemplatesAdminTest extends TestCase
         self::assertSame(['template3', 'template1'], $firstCall['accessibleTemplates']);
         self::assertSame(' || (( template != "template3" ) && ( template != "template1" ))', $firstCall['disabledAddCondition']);
         self::assertSame(' || (( template != "template3" ) && ( template != "template1" ))', $firstCall['disabledEditCondition']);
-        self::assertSame('1 != 0', $firstCall['disabledDeleteCondition']);
+        self::assertSame(' || 1 != 0', $firstCall['disabledDeleteCondition']);
 
         $secondCall = $this->toolbarActionUpdater->calledWith[1];
         self::assertSame(['template3', 'template1'], $secondCall['accessibleTemplates']);
         self::assertSame(' || (( template != "template3" ) && ( template != "template1" ))', $secondCall['disabledAddCondition']);
         self::assertSame(' || (( template != "template3" ) && ( template != "template1" ))', $secondCall['disabledEditCondition']);
-        self::assertSame('1 != 0', $secondCall['disabledDeleteCondition']);
+        self::assertSame(' || 1 != 0', $secondCall['disabledDeleteCondition']);
     }
 
     public function testFormMetaDataNotFound(): void
@@ -132,9 +132,9 @@ class TemplatesAdminTest extends TestCase
 
         $firstCall = $this->toolbarActionUpdater->calledWith[0];
         self::assertSame([], $firstCall['accessibleTemplates']);
-        self::assertSame('1 != 0', $firstCall['disabledAddCondition']);
-        self::assertSame('1 != 0', $firstCall['disabledEditCondition']);
-        self::assertSame('1 != 0', $firstCall['disabledDeleteCondition']);
+        self::assertSame(' || 1 != 0', $firstCall['disabledAddCondition']);
+        self::assertSame(' || 1 != 0', $firstCall['disabledEditCondition']);
+        self::assertSame(' || 1 != 0', $firstCall['disabledDeleteCondition']);
     }
 
     public function testConfigureViewsWithoutRelevantViews(): void
