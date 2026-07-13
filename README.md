@@ -44,7 +44,7 @@ return [
 
 ### Add the bundle to package.json
 
-In order to enable visibility- and disabled-checks you need to register the bundle in your package.json:
+In order to enable visibility- and disabled-checks for toolbar actions, you need to register the bundle in your package.json:
 
 ```js
 // assets/admin/package.json
@@ -134,6 +134,7 @@ The page editor then applies the permissions automatically:
 - Users without `write` permission for the current template cannot save, publish or unpublish that page.
 - Users without `delete` permission for the current template cannot delete that page.
 
+⚠️ **Important**: After changing the permissions, you need to clear the browser cache (F5) for the changes to take effect.
 
 ## 🤝 Contribution
 

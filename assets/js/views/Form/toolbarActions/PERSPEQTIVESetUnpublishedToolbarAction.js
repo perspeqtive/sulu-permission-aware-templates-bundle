@@ -5,6 +5,7 @@ export default class PERSPEQTIVESetUnpublishedToolbarAction extends SetUnpublish
 
     getToolbarItemConfig() {
         let toolbarItemConfig = super.getToolbarItemConfig();
+
         if (toolbarItemConfig === undefined) {
             return;
         }
