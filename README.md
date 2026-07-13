@@ -61,6 +61,8 @@ In order to enable visibility- and disabled-checks for toolbar actions, you need
 ### Import the bundle
 
 ```js
+// assets/admin/app.js
+
 // ...
 import 'sulu-permission-aware-templates-bundle';
 ```
