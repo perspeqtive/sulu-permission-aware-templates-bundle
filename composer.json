@@ -1,7 +1,7 @@
 {
   "name": "perspeqtive/sulu-permission-aware-templates-bundle",
   "description": "Adds permissions to templates",
-  "license": "proprietary",
+  "license": "MIT",
   "type": "sulu-bundle",
   "authors": [
     {
