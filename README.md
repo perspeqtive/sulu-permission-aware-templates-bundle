@@ -1,7 +1,6 @@
 # Sulu Permission Aware Templates Bundle
 
 [![Latest Stable Version](https://poser.pugx.org/perspeqtive/sulu-permission-aware-templates-bundle/v/stable)](https://packagist.org/packages/perspeqtive/sulu-permission-aware-templates-bundle)
-[![License](https://poser.pugx.org/perspeqtive/sulu-permission-aware-templates-bundle/license)](https://packagist.org/packages/perspeqtive/sulu-permission-aware-templates-bundle)
 
 This bundle adds permission-aware page templates to the Sulu admin.
 
